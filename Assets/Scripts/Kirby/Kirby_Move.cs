@@ -24,7 +24,7 @@ public class Kirby_Move : MonoBehaviour
 
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         float direction = Input.GetAxisRaw("Horizontal");
 
