@@ -26,10 +26,13 @@ public class Kirby_Move : MonoBehaviour
     [SerializeField] float jumpPower = 4f;
     bool isJumping=false;
     
-    // [Header("Attack")]
-    
+    [Header("Balloon")]
+    bool canBallon = false; // 풍선 가능해?    
 
     public enum State { None, Walk, Run, Attack, Balloon};
+
+    [Header("Sounds")]
+    [SerializeField] SoundsManager soundsManager;
 
 
     
@@ -58,6 +61,7 @@ public class Kirby_Move : MonoBehaviour
     void Jump(){
         if(canJump && !alreayJump){
             rigid.velocity = new Vector2(rigid.velocity.x, jumpPower);
+            soundsManager.PlaySounds("JUMP");
         }
     }
 
@@ -69,24 +73,29 @@ public class Kirby_Move : MonoBehaviour
             canJump = true;
             isJumping=false;
             animator.SetBool("isJumpDown",false);
+            canBallon=false;
         }
         else{ 
+            canBallon =true;
             canJump = false;
             if(alreayJump) isJumping =true;
 
         }
 
+        if(canBallon && Input.GetKey(KeyCode.Z))
+            animator.SetBool("isBalloon", true);
         
 
 
 
     }
 
+
+
     void Update()
     {   
     
 
-        if(Input.GetKeyUp(KeyCode.Z)) alreayJump = true;
         if(Input.GetKeyUp(KeyCode.RightArrow)){
             StopCoroutine("ActiveRunTimer");
             StartCoroutine("ActiveRunTimer");
@@ -98,6 +107,15 @@ public class Kirby_Move : MonoBehaviour
             StartCoroutine("ActiveRunTimer");
             isRight=false;
             isLeft=true;
+        }
+
+        if(Input.GetKey(KeyCode.Z)){
+             Jump(); // 점프
+             alreayJump=true;
+        }
+        if(Input.GetKeyUp(KeyCode.Z) && rigid.velocity.y>=0){
+            alreayJump=false;
+            rigid.velocity = new Vector2(rigid.velocity.x,0); // 점프
         }
 
         //왼쪽 이동시 로직
@@ -138,14 +156,7 @@ public class Kirby_Move : MonoBehaviour
 
         }
 
-        if(Input.GetKey(KeyCode.Z)){
-             Jump(); // 점프
-             alreayJump=true;
-        }
-        if(Input.GetKeyUp(KeyCode.Z) && rigid.velocity.y>=0){
-            alreayJump=false;
-            rigid.velocity = new Vector2(rigid.velocity.x,0); // 점프
-        }
+
 
         if(rigid.velocity.x == 0){
             //속력 0시 애니메이션 다끄기 ++++++
