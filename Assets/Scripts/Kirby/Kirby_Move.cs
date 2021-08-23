@@ -18,7 +18,13 @@ public class Kirby_Move : MonoBehaviour
 
     bool canRun =false; // 달릴수 있는지 딜레이
     bool isRight=false, isLeft = false;
-    float RunDelay=0.4f; // 더블클릭 시간 
+    float RunDelay=0.3f; // 더블클릭 시간 
+
+    [Header("Jump")]
+    bool canJump = false; //점프 가능해?
+    bool alreayJump = false; // 점프키 한번 누를때마다 한번만 점프하게 하는 부울
+    [SerializeField] float jumpPower = 4f;
+    bool isJumping=false;
     
 
 
@@ -37,15 +43,49 @@ public class Kirby_Move : MonoBehaviour
     // Update is called once per frame
 
     IEnumerator ActiveRunTimer(){
-        RunDelay=0.4f;
+        RunDelay=0.3f;
         while(RunDelay >=0){
             RunDelay -= Time.deltaTime;
             yield return null;
         }
-        RunDelay=0.4f;
+        RunDelay=0.3f;
     }
+
+    void Jump(){
+        if(canJump && !alreayJump){
+            rigid.velocity = new Vector2(rigid.velocity.x, jumpPower);
+        }
+    }
+
+    void FixedUpdate(){
+        
+        Debug.DrawRay(transform.position, transform.up*-1, Color.blue, 0.3f);
+
+        RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1f, LayerMask.GetMask("Ground"));
+        if(rayHit.collider!=null) {
+            canJump = true;
+            isJumping=false;
+            Debug.Log(isJumping);
+            animator.SetBool("isJumpDown",false);
+        }
+        else{ 
+            canJump = false;
+            if(alreayJump) isJumping =true;
+
+        }
+
+        
+
+
+
+    }
+
+    float a=0f;
     void Update()
     {   
+    
+
+        if(Input.GetKeyUp(KeyCode.Z)) alreayJump = true;
         if(Input.GetKeyUp(KeyCode.RightArrow)){
             StopCoroutine("ActiveRunTimer");
             StartCoroutine("ActiveRunTimer");
@@ -58,11 +98,10 @@ public class Kirby_Move : MonoBehaviour
             isRight=false;
             isLeft=true;
         }
-        Debug.Log(RunDelay);
 
         //왼쪽 이동시 로직
         if( Input.GetKey(KeyCode.LeftArrow)){
-            if(RunDelay>0 && RunDelay<0.4f && rigid.velocity.x <-0.5f && isLeft) canRun = true;
+            if(RunDelay>0 && RunDelay<0.3f && rigid.velocity.x <-0.5f && isLeft) canRun = true;
             if(canRun){
                 animator.SetBool("isRun",true);
                 rigid.AddForce( new Vector2(dashSpeed*-1, 0),ForceMode2D.Impulse);
@@ -80,7 +119,7 @@ public class Kirby_Move : MonoBehaviour
         }
         //오른쪽 이동 시 로직
         else if( Input.GetKey(KeyCode.RightArrow)){
-            if(RunDelay>0 && RunDelay<0.4f && rigid.velocity.x >0.5f && isRight) canRun = true;
+            if(RunDelay>0 && RunDelay<0.3f && rigid.velocity.x >0.5f && isRight) canRun = true;
             if(canRun){
                 animator.SetBool("isRun",true);
                 rigid.AddForce( new Vector2(dashSpeed*1, 0),ForceMode2D.Impulse);
@@ -98,43 +137,31 @@ public class Kirby_Move : MonoBehaviour
 
         }
 
+        if(Input.GetKey(KeyCode.Z)){
+             Jump(); // 점프
+             alreayJump=true;
+        }
+        if(Input.GetKeyUp(KeyCode.Z) && rigid.velocity.y>=0){
+            alreayJump=false;
+            rigid.velocity = new Vector2(rigid.velocity.x,0); // 점프
+        }
+
         if(rigid.velocity.x == 0){
             //속력 0시 애니메이션 다끄기 ++++++
             animator.SetBool("isWalk",false);
             animator.SetBool("isRun",false);
             canRun=false;
         }
-
-        // Debug.Log(rightMove + " " + isRunTime);
-        // if((rightMove==1 || leftMove==1) && isRunTime<=0.6f){
-        //     isRunTime-=Time.deltaTime;
-        // }
-        // if((rightMove==1 ||leftMove==1) && isRunTime >0 && Input.GetKeyDown(KeyCode.RightArrow))canRun=true;
-        // if((rightMove>=2 || leftMove>=2) && isRunTime<0f){
-        //     isRunTime=0.6f;
-        //     canRun=false;
-        //     rightMove=0;
-        //     leftMove=0;
-        // }else if((rightMove>=2 || leftMove>=2)) isRunTime-=Time.deltaTime;
         
+        if(isJumping && rigid.velocity.y>0) {
+            animator.SetBool("isJumpUp", true);
+            animator.SetBool("isJumpDown", false);
+        }
+        else if(isJumping && rigid.velocity.y<=0){
+            animator.SetBool("isJumpDown", true);
+            animator.SetBool("isJumpUp", false);
+        }
 
-
-        // if(Input.GetKeyUp(KeyCode.RightArrow)) {checkRun = true; isRunTime=0; animator.SetBool("isRun",false);}
-        // if(checkRun) isRunTime += Time.deltaTime;
-
-
-        // if(isRunTime <=0.7f && Input.GetKeyDown(KeyCode.RightArrow)){
-        //     speed=6f;
-        //     animator.SetBool("isRun", true);
-        //     Move();
-        // }else if(checkRun){
-        //     speed=3f;
-        //     Move();
-        // }
-
-        // if(Input.GetButtonUp("Horizontal")){
-        //     rigid.velocity = new Vector2(0,rigid.velocity.y);
-        // }
     }
 
 
