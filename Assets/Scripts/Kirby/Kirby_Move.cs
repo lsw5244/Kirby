@@ -26,6 +26,10 @@ public class Kirby_Move : MonoBehaviour
     [SerializeField] float jumpPower = 4f;
     bool isJumping=false;
     
+    // [Header("Attack")]
+    
+
+    public enum State { None, Walk, Run, Attack, Balloon};
 
 
     
@@ -59,13 +63,11 @@ public class Kirby_Move : MonoBehaviour
 
     void FixedUpdate(){
         
-        Debug.DrawRay(transform.position, transform.up*-1, Color.blue, 0.3f);
 
         RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1f, LayerMask.GetMask("Ground"));
         if(rayHit.collider!=null) {
             canJump = true;
             isJumping=false;
-            Debug.Log(isJumping);
             animator.SetBool("isJumpDown",false);
         }
         else{ 
@@ -80,7 +82,6 @@ public class Kirby_Move : MonoBehaviour
 
     }
 
-    float a=0f;
     void Update()
     {   
     
