@@ -27,15 +27,20 @@ public class Kirby_Move : MonoBehaviour
     bool isJumping=false;
     
     [Header("Balloon")]
-    bool canBallon = false; // 풍선 가능해?    
+    bool canBalloon = false; // 풍선 가능해?    
+    bool isBalloon = false; // 지금 풍선이야?
 
-    public enum State { None, Walk, Run, Attack, Balloon};
 
     [Header("Sounds")]
     [SerializeField] SoundsManager soundsManager;
-
-
     
+
+
+    bool isGrounded = false;
+
+
+
+    public enum State { None, Walk, Run, Attack, Balloon};    
     // Start is called before the first frame update
     void Start()
     {
@@ -60,6 +65,7 @@ public class Kirby_Move : MonoBehaviour
 
     void Jump(){
         if(canJump && !alreayJump){
+             alreayJump=true;
             rigid.velocity = new Vector2(rigid.velocity.x, jumpPower);
             soundsManager.PlaySounds("JUMP");
         }
@@ -73,17 +79,16 @@ public class Kirby_Move : MonoBehaviour
             canJump = true;
             isJumping=false;
             animator.SetBool("isJumpDown",false);
-            canBallon=false;
+            canBalloon=false;
         }
         else{ 
-            canBallon =true;
+            isGrounded = false;
             canJump = false;
             if(alreayJump) isJumping =true;
 
         }
 
-        if(canBallon && Input.GetKey(KeyCode.Z))
-            animator.SetBool("isBalloon", true);
+
         
 
 
@@ -94,7 +99,29 @@ public class Kirby_Move : MonoBehaviour
 
     void Update()
     {   
-    
+        // if(canBalloon && Input.GetKey(KeyCode.Z)){
+            
+        //     isBalloon =true;
+        //     if(isBalloon)
+        //         animator.SetBool("isBalloon", true);
+
+        // }
+
+        if(Input.GetKeyDown(KeyCode.X)&&isBalloon){
+            isBalloon=false;
+            animator.SetBool("isBalloon", false);
+        }
+
+        if(Input.GetKeyUp(KeyCode.Z) && !isGrounded){
+            canBalloon=true;
+        }
+        if(canBalloon&&Input.GetKeyDown(KeyCode.Z)){
+            animator.SetBool("isBalloon", true);
+            isBalloon=true;
+            rigid.AddForce(new Vector2(0, 5f), ForceMode2D.Impulse);
+        }
+
+
 
         if(Input.GetKeyUp(KeyCode.RightArrow)){
             StopCoroutine("ActiveRunTimer");
@@ -111,7 +138,6 @@ public class Kirby_Move : MonoBehaviour
 
         if(Input.GetKey(KeyCode.Z)){
              Jump(); // 점프
-             alreayJump=true;
         }
         if(Input.GetKeyUp(KeyCode.Z) && rigid.velocity.y>=0){
             alreayJump=false;
