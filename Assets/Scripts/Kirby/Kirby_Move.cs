@@ -88,7 +88,7 @@ public class Kirby_Move : MonoBehaviour
 
         }
 
-
+        if(isBalloon) canRun = false;
         
 
 
@@ -110,6 +110,7 @@ public class Kirby_Move : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.X)&&isBalloon){
             isBalloon=false;
             animator.SetBool("isBalloon", false);
+            animator.SetBool("isRun", false);
         }
 
         if(Input.GetKeyUp(KeyCode.Z) && !isGrounded){
